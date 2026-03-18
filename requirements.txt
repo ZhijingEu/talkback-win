@@ -1,0 +1,10 @@
+# claude-code-tts-hook dependencies
+# Python 3.8+ required (tested on 3.13)
+# All other dependencies (asyncio, ctypes, tempfile, re, json) are stdlib
+
+# Required for edge engine (default) -- Microsoft neural voices, requires internet
+edge-tts>=7.0.0
+
+# Required for local engine -- Windows SAPI voices (David, Zira), offline/instant
+# Install only if you want CLAUDE_TTS_ENGINE=local
+# pyttsx3>=2.90
