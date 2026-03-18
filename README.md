@@ -2,6 +2,8 @@
 
 **Free, Windows-native TTS so your AI coding agent can talk back — no API key, one pip install.**
 
+![TalkBack-Win](https://miro.medium.com/v2/resize:fit:828/format:webp/1*t9Hb3BoXFCUM2RFm6rWkTw.jpeg "TalkBack-Win")
+
 > **TL;DR** — When your agent finishes a response, `speak.py` reads it aloud using Microsoft's neural voices. Short conversational replies get spoken; long outputs, code blocks, and bullet lists are skipped automatically. Press Escape to interrupt mid-sentence. Works with Claude Code, Codex CLI, and Gemini CLI.
 
 ---
