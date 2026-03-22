@@ -1,10 +1,12 @@
-# talkback-win
+﻿# talkback-win
 
 **Free, Windows-native TTS so your AI coding agent can talk back — no API key, one pip install.**
 
+**OpenAI Codex users:** see https://github.com/ZhijingEu/talkback-win-openai-codex
+
 ![TalkBack-Win](https://miro.medium.com/v2/resize:fit:828/format:webp/1*t9Hb3BoXFCUM2RFm6rWkTw.jpeg "TalkBack-Win")
 
-> **TL;DR** — When your agent finishes a response, `speak.py` reads it aloud using Microsoft's neural voices. Short conversational replies get spoken; long outputs, code blocks, and bullet lists are skipped automatically. Press Escape to interrupt mid-sentence. Works with Claude Code, Codex CLI, and Gemini CLI.
+> **TL;DR** — When your agent finishes a response, `speak.py` reads it aloud using Microsoft's neural voices. Short conversational replies get spoken; long outputs, code blocks, and bullet lists are skipped automatically. Press Escape to interrupt mid-sentence. Works with Claude Code and Gemini CLI.
 
 ---
 
@@ -23,7 +25,7 @@ Several community projects fill this gap, but each has a catch:
 
 `talkback-win` uses `edge-tts`, which streams from Microsoft's TTS servers — the same neural voices as Edge Read Aloud. No API key, no model download.
 
-A nice bonus: Claude Code, Codex CLI, and Gemini CLI all share the same hook mechanism, so `speak.py` works across all three with minor config differences.
+A nice bonus: Claude Code and Gemini CLI share the same hook mechanism, so `speak.py` works across both with minor config differences.
 
 ---
 
@@ -33,7 +35,7 @@ A nice bonus: Claude Code, Codex CLI, and Gemini CLI all share the same hook mec
 - **Smart filtering** — only speaks short conversational replies; skips code, bullet lists, tool output, and long responses automatically
 - **Escape to interrupt** — press Escape mid-sentence to stop playback (OS-level key detection)
 - **One file** — `speak.py` is fully self-contained, no config file needed
-- **Agent-agnostic** — Claude Code, Codex CLI, Gemini CLI, or any agent that can pipe JSON to a subprocess
+- **Agent-agnostic** — Claude Code, Gemini CLI, or any agent that can pipe JSON to a subprocess
 
 ---
 
@@ -64,8 +66,9 @@ Place it in a gitignored folder so it stays local:
 | Agent | Recommended path |
 |-------|-----------------|
 | Claude Code | `.claude/tts/speak.py` |
-| Codex CLI | `.codex/tts/speak.py` |
 | Gemini CLI | `.gemini/tts/speak.py` |
+
+> Codex CLI users: see the Codex-focused variant at https://github.com/ZhijingEu/talkback-win-openai-codex
 
 **3. Verify it works**
 
@@ -107,29 +110,11 @@ Restart Claude Code after editing — settings are loaded at startup.
 
 ---
 
-### Codex CLI (Stop hook, v0.114+)
+### Codex CLI (not supported natively)
 
-Add to `~/.codex/config.json` (or project-level `config.json`):
+Codex CLI’s TUI does not expose a stable hook surface the same way Claude Code does, and JSON-based hook examples are ignored in current Codex configs. If you want Codex support, use the dedicated wrapper repo instead:
 
-```json
-{
-  "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "venv/Scripts/python.exe .codex/tts/speak.py",
-            "timeout": 30
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-Note: the `Stop` hook is experimental as of v0.114. Check [openai/codex#2109](https://github.com/openai/codex/issues/2109) for current status.
+https://github.com/ZhijingEu/talkback-win-openai-codex
 
 ---
 
@@ -260,7 +245,7 @@ TTS is **skipped** automatically when the response:
 
 ### Characters sound wrong — em dashes read as "a euros", symbols mispronounced
 
-**Root cause:** Windows reads `sys.stdin` as cp1252 by default. The JSON from your agent is UTF-8, so multi-byte characters like `—` (em dash, `\xE2\x80\x94`) get decoded as three separate cp1252 characters (`â` + `€` + `"`) before the strip function ever sees them. Aria then says "a euros" instead of pausing.
+**Root cause:** Windows reads `sys.stdin` as cp1252 by default. The JSON from your agent is UTF-8, so multi-byte characters like `—` (em dash, `\xE2\x80\x94`) get decoded as three separate cp1252 characters (`Ã¢` + `â‚¬` + `"`) before the strip function ever sees them. Aria then says "a euros" instead of pausing.
 
 **Fix:** `speak.py` reads stdin as `sys.stdin.buffer.read().decode("utf-8")` to force UTF-8 decoding. If you fork the script and see this problem return, check that line first.
 
@@ -269,7 +254,7 @@ TTS is **skipped** automatically when the response:
 with open("tts_debug.txt", "w", encoding="utf-8") as f:
     f.write(repr(cleaned))
 ```
-If you see `â€"` in the log instead of `—`, it's a cp1252 decoding issue.
+If you see `Ã¢â‚¬"` in the log instead of `—`, it's a cp1252 decoding issue.
 
 ---
 
@@ -279,7 +264,7 @@ If you see `â€"` in the log instead of `—`, it's a cp1252 decoding issue.
 
 **Cause:** Claude Code's Stop hook validator rejects any stdout output from the hook script. The `{"decision": "allow"}` pattern needed by Gemini CLI's `AfterAgent` hook must not be printed when running under Claude Code.
 
-**Fix:** Only enable the stdout decision via `set TTS_AGENT=gemini`. Do not set this for Claude Code or Codex.
+**Fix:** Only enable the stdout decision via `set TTS_AGENT=gemini`. Do not set this for Claude Code.
 
 ---
 
@@ -344,4 +329,4 @@ talkback-win/
 
 - [Null-Phnix/claude-voice](https://github.com/Null-Phnix/claude-voice) — inspiration for the Stop hook pattern
 - [rany2/edge-tts](https://github.com/rany2/edge-tts) — the library making free neural TTS possible
-- Claude Code, Codex CLI, and Gemini CLI hook documentation
+- Claude Code and Gemini CLI hook documentation
